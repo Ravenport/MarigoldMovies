@@ -14,8 +14,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#000",
+        "translucent": true
+      },
+      "package": "com.ravenport.MarigoldMovies"
     },
     "web": {
       "bundler": "metro",
