@@ -10,6 +10,8 @@ import Carousel from '../src/components/carousel/index.jsx';
 import { EXPO_TMDB_API_TOKEN } from "../env.json";
 import { getData } from "../api/manipulateData.js";
 
+import { getItem, setItem } from "../utils/data.js";
+
 const Index = ({ navigation }) => {
   const [nowPlaying, setNowPlaying] = useState([]);
   const [pageNowPlaying, setPageNowPlaying] = useState(1);
@@ -28,9 +30,10 @@ const Index = ({ navigation }) => {
   };
 
   async function loadMovies() {
-    if(localStorage.getItem("@config") === null) {
+    const tempConfig = await getItem("@config");
+    if(tempConfig === null) {
       const configResp = await getData("https://api.themoviedb.org/3/configuration", config);
-      localStorage.setItem("@config", JSON.stringify(configResp.data));
+      await setItem("@config", configResp.data);
     }
 
     const nowPlayingResp = await getData(

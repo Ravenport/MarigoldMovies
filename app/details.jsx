@@ -1,6 +1,7 @@
 import { Text, View, ScrollView, StyleSheet, ImageBackground, Dimensions, Image } from 'react-native';
 import * as React from 'react';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import QRCode from 'react-native-qrcode-svg';
 
 import { getData } from "../api/manipulateData.js";
 
@@ -8,7 +9,7 @@ import Body from '../src/components/body/index.jsx';
 import CardCustom from '../src/components/card/index.jsx';
 import MovieCard from "../src/components/moviecard/index.jsx";
 import { EXPO_TMDB_API_TOKEN } from "../env.json";
-import axios from 'axios';
+import {getItem} from '../utils/data.js';
 
 const Details = (props) => {
   const styles = StyleSheet.create({
@@ -90,14 +91,27 @@ const Details = (props) => {
       fontWeight: "bold",
       marginTop: 30,
       marginBottom: 10,
+    },
+    containerShareQrCode: {
+      marginTop: 40,
+      padding: 10,
+      width: "100%",
+      alignItems: "center",
+    },
+    titleQrCode: {
+      fontSize: 25,
+      fontWeight: "bold",
+      alignSelf: "start",
+      marginBottom: 30,
     }
   });
 
-  const [movie, setMovie] = React.useState(JSON.parse(localStorage.getItem("@movie")));
+  const [movie, setMovie] = React.useState({});
+  const [linkQrCode, setLinkQrCode] = React.useState(undefined);
   const [url, setUrl] = React.useState("");
   const [urlCard, setUrlCard] = React.useState("");
   const [credits, setCredits] = React.useState({});
-  const [config, setConfig] = React.useState(JSON.parse(localStorage.getItem("@config")));
+  const [config, setConfig] = React.useState({});
   const head = {
     headers: {
       accept: "application/json",
@@ -105,31 +119,46 @@ const Details = (props) => {
     },
   };
 
-  function getUrl() {
-    handleImages();
+  const getUrl = async () => {
+    await handleImages();
   }
 
-  const getCredits = async () => {
-    response = await getData(`https://api.themoviedb.org/3/movie/${movie.id}/credits?language=pt-BR`, head);
+  const getCredits = async (movieTemp) => {
+    response = await getData(`https://api.themoviedb.org/3/movie/${movieTemp.id}/credits?language=pt-BR`, head);
     setCredits(response.data);
   }
 
-  const handleImages = () => {
+  const handleImages = async () => {
+    const movieData = await getItem("@movie");
+    setMovie(movieData.data);
+
+    const configData = await getItem("@config");
+    setConfig(configData.data);
+
     setUrl(
-      config.images.secure_base_url +
-      config.images.backdrop_sizes[config.images.backdrop_sizes.length - 1] +
-      movie.backdrop_path
+      configData.data.images.secure_base_url +
+      configData.data.images.backdrop_sizes[configData.data.images.backdrop_sizes.length - 1] +
+      movieData.data.backdrop_path
     )
 
     setUrlCard(
-      config.images.secure_base_url +
-      config.images.backdrop_sizes[1] +
-      movie.backdrop_path
+      configData.data.images.secure_base_url +
+      configData.data.images.backdrop_sizes[1] +
+      movieData.data.backdrop_path
     );
+
+    await getWatchProviders(movieData.data);
+    await getCredits(movieData.data);
   }
 
+  const getWatchProviders = async (movieTemp) => {
+    const response = await getData(`https://api.themoviedb.org/3/movie/${movieTemp.id}/watch/providers`, head);
+    if(response.data.results["BR"]?.link) {
+      setLinkQrCode(response.data.results["BR"].link);
+    }
+  };
+
   React.useEffect(() => {
-    getCredits();
     getUrl();
   }, []);
 
@@ -155,13 +184,16 @@ const Details = (props) => {
           <View style={styles.dataMovie}>
             <Text style={styles.titleMovie}>{movie.title} ({new Date(movie.release_date).getFullYear()})</Text>
             <View style={styles.containerRating}>
-              <Text style={styles.ratingMovie} variant="bodyMedium">{movie.vote_average.toFixed(2)}</Text>
+              <Text style={styles.ratingMovie} variant="bodyMedium">{movie.vote_average ? movie?.vote_average.toFixed(2) : ""}</Text>
               <Fontisto name="star" size={15} color="white" />
             </View>
             <View style={styles.containerGenres}>
-              {movie.searchedDetails.genres.map((genre) => {
-                return <Text variant="bodyMedium" style={styles.genresMovie} key={genre.id}>{genre.name}</Text>
-              })}
+              {movie.searchedDetails ? 
+                movie.searchedDetails.genres.map((genre) => {
+                  return <Text variant="bodyMedium" style={styles.genresMovie} key={genre.id}>{genre.name}</Text>
+                }):
+                ""
+              }
             </View>
             <View style={styles.containerSinopse}>
               <Text style={styles.titleSinopse}>Sinopse</Text>
@@ -224,6 +256,7 @@ const Details = (props) => {
               <Text style={styles.titleSimilar}>Filmes Similares:</Text>
               <ScrollView horizontal={true}>
                 {
+                  movie.searchedSimilars ? 
                   movie.searchedSimilars.results.map((similarMovie) => {
                     return (<MovieCard
                       data={similarMovie}
@@ -231,10 +264,22 @@ const Details = (props) => {
                         width: 500,
                       }}
                     />)
-                  })
+                  }) :
+                  ""
                 }
               </ScrollView>
             </View>
+            {linkQrCode &&
+              <View style={styles.containerShareQrCode}>
+                <Text style={styles.titleQrCode}>Mais Informações:</Text>
+                  <QRCode
+                    value={linkQrCode}
+                    size={200}
+                    color="black"
+                    backgroundColor="white"
+                  />
+              </View>
+            }
           </View>
         </View>
       </ScrollView>

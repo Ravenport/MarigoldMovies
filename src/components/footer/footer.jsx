@@ -10,13 +10,14 @@ const Footer = () => {
 
   function navigate(pagina) {
     navigation.navigate(pagina);
-  }
+  }  
 
   return <>
     <View>
       <Container>
         <View style={styles.containerFooter}>
           <LinkButton style={styles.btnNav} href="/profile"><Icon name="person" type="ionicon" color="#fff"/></LinkButton>
+          <LinkButton style={styles.btnNav} href="/scanner"><Icon name="qr-code" type="ionicons" color="#fff"/></LinkButton>
           <LinkButton style={styles.btnNav} href="/"><Icon name="house" type="FontAwesome6" color="#fff"/></LinkButton>
           <LinkButton style={styles.btnNav} href="/search"><Icon name="search" type="ionicon" color="#fff"/></LinkButton>
         </View>
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     width: "100%",
     flexDirection: "row",
     justifyContent: "space-evenly",
-    marginTop: 10,
+    marginTop: 5,
   }, 
   btnNav: {
     backgroundColor: Colors().GoldenSunrise,

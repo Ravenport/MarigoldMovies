@@ -16,6 +16,16 @@ export default function Layout() {
       }}
     />
     <Stack.Screen
+      name="profile"
+      options={{
+        headerShown: false,
+      }}
+    />
+    <Stack.Screen
+      name="scanner"
+      options={{ title: "QR Code Scanner" }}
+    />
+    <Stack.Screen
       name="search"
       options={{
         headerShown: false,

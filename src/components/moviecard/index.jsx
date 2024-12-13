@@ -12,42 +12,48 @@ import { router } from 'expo-router';
 
 import { getData } from "../../../api/manipulateData.js";
 
+import { getItem, setItem, removeItem } from "../../../utils/data.js";
+
 const MovieCard = (props) => {
   const [movie, setMovie] = React.useState(props.data);
   const [url, setUrl] = React.useState("");
-  const [config, setConfig] = React.useState(JSON.parse(localStorage.getItem("@config")));
+  const [config, setConfig] = React.useState({});
+  const head = {
+    headers: {
+      accept: "application/json",
+      Authorization: "Bearer " + EXPO_TMDB_API_TOKEN,
+    },
+  };
 
-  function getUrl() {
-    let head = {
-      headers: {
-        accept: "application/json",
-        Authorization: "Bearer " + EXPO_TMDB_API_TOKEN,
-      },
-    };
+  const getUrl = async () => {
+    const responseConfig = await getItem("@config");
+    setConfig(responseConfig.data);
     
     setUrl(
-      config.images.secure_base_url +
-      config.images.backdrop_sizes[config.images.backdrop_sizes.length - 1] +
+      responseConfig.data.images.secure_base_url +
+      responseConfig.data.images.backdrop_sizes[responseConfig.data.images.backdrop_sizes.length - 1] +
       movie.backdrop_path
     )
 
-    getData(`https://api.themoviedb.org/3/movie/${movie.id}?language=pt-BR`, head).then(response =>
-      movie["searchedDetails"] = response.data
-    );
+    const responseDetails = await getData(`https://api.themoviedb.org/3/movie/${movie.id}?language=pt-BR`, head);
+    movie["searchedDetails"] = responseDetails.data;
 
-    getData(`https://api.themoviedb.org/3/movie/${movie.id}/similar?language=pt-BR&page=1`, head).then(response =>
-      movie["searchedSimilars"] = response.data
-    );
+    const responseSimilars = await getData(`https://api.themoviedb.org/3/movie/${movie.id}/similar?language=pt-BR&page=1`, head);
+    movie["searchedSimilars"] = responseSimilars.data;
   }
 
-  const openDetails = () => {
+  const openDetails = async () => {
     props.data["searchedImg"] = url;
-    localStorage.setItem("@movie", JSON.stringify(props.data));
+    await setItem("@movie", props.data);
     router.replace("/details")
   };
 
+  const removeMovie = async () => {
+    await removeItem("@movie");
+  };
+
   React.useEffect(() => {
-    localStorage.removeItem("@movie");
+    removeMovie();
   }, []);
 
   React.useEffect(() => {
