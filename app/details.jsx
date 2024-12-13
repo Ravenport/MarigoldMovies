@@ -10,6 +10,7 @@ import CardCustom from '../src/components/card/index.jsx';
 import MovieCard from "../src/components/moviecard/index.jsx";
 import { EXPO_TMDB_API_TOKEN } from "../env.json";
 import {getItem} from '../utils/data.js';
+import { secure_base_url, backdrop_sizes } from "../src/constants/configs.json";
 
 const Details = (props) => {
   const styles = StyleSheet.create({
@@ -132,18 +133,15 @@ const Details = (props) => {
     const movieData = await getItem("@movie");
     setMovie(movieData.data);
 
-    const configData = await getItem("@config");
-    setConfig(configData.data);
-
     setUrl(
-      configData.data.images.secure_base_url +
-      configData.data.images.backdrop_sizes[configData.data.images.backdrop_sizes.length - 1] +
+      secure_base_url +
+      backdrop_sizes[backdrop_sizes.length - 1] +
       movieData.data.backdrop_path
     )
 
     setUrlCard(
-      configData.data.images.secure_base_url +
-      configData.data.images.backdrop_sizes[1] +
+      secure_base_url +
+      backdrop_sizes[1] +
       movieData.data.backdrop_path
     );
 
@@ -213,8 +211,8 @@ const Details = (props) => {
                         height: 250,
                       }}
                       url={
-                        config.images.secure_base_url +
-                        config.images.backdrop_sizes[config.images.backdrop_sizes.length - 1] +
+                        secure_base_url +
+                        backdrop_sizes[backdrop_sizes.length - 1] +
                         actor.profile_path
                       }
                       styleContainer={{
@@ -239,8 +237,8 @@ const Details = (props) => {
                         height: 250,
                       }}
                       url={
-                        config.images.secure_base_url +
-                        config.images.backdrop_sizes[config.images.backdrop_sizes.length - 1] +
+                        secure_base_url +
+                        backdrop_sizes[backdrop_sizes.length - 1] +
                         crewMember.profile_path
                       }
                       styleContainer={{

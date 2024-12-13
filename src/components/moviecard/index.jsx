@@ -2,22 +2,19 @@ import * as React from 'react';
 import { StyleSheet, Dimensions, View } from 'react-native';
 import axios from "axios";
 import { Card, Text } from 'react-native-paper';
+import { router } from 'expo-router';
 
 import { ButtonComponent } from "../button/index.jsx";
 
+import { getData } from "../../../api/manipulateData.js";
+import { getItem, setItem, removeItem } from "../../../utils/data.js";
+import { secure_base_url, backdrop_sizes } from "../../constants/configs.json";
 import Colors from "../../constants/colors.js";
 import { EXPO_TMDB_API_TOKEN } from "../../../env.json";
-
-import { router } from 'expo-router';
-
-import { getData } from "../../../api/manipulateData.js";
-
-import { getItem, setItem, removeItem } from "../../../utils/data.js";
 
 const MovieCard = (props) => {
   const [movie, setMovie] = React.useState(props.data);
   const [url, setUrl] = React.useState("");
-  const [config, setConfig] = React.useState({});
   const head = {
     headers: {
       accept: "application/json",
@@ -26,12 +23,9 @@ const MovieCard = (props) => {
   };
 
   const getUrl = async () => {
-    const responseConfig = await getItem("@config");
-    setConfig(responseConfig.data);
-    
     setUrl(
-      responseConfig.data.images.secure_base_url +
-      responseConfig.data.images.backdrop_sizes[responseConfig.data.images.backdrop_sizes.length - 1] +
+      secure_base_url +
+      backdrop_sizes[backdrop_sizes.length - 1] +
       movie.backdrop_path
     )
 
