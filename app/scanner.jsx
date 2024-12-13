@@ -52,7 +52,7 @@ const Scanner = () => {
     if (!permission.granted) {
         return (
             <View style={styles.containerNoCamera}>
-                <Text style={styles.message}>Nós Precisamos da sua permissão apra usar sua camera.</Text>
+                <Text style={styles.message}>Nós Precisamos da sua permissão para usar sua camera.</Text>
                 <Button onPress={requestPermission} title="Dar Permissão." />
             </View>
         );

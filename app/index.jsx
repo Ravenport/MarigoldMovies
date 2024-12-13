@@ -31,8 +31,10 @@ const Index = ({ navigation }) => {
 
   async function loadMovies() {
     const tempConfig = await getItem("@config");
+    console.log("tempConfig", tempConfig);
     if(tempConfig === null) {
       const configResp = await getData("https://api.themoviedb.org/3/configuration", config);
+      
       await setItem("@config", configResp.data);
     }
 
