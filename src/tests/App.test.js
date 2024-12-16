@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
-import Index from "../../app/index";
-import Details from "../../app/details";
-import Scanner from "../../app/scanner";
-import Search from "../../app/search";
+import Index from "../../app/logged/index";
+import Details from "../../app/logged/details";
+import Scanner from "../../app/logged/scanner";
+import Search from "../../app/logged/search";
 
 import Container from "../components/container/index";
 import MovieCard from "../components/moviecard/index";
