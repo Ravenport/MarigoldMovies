@@ -16,10 +16,10 @@ const Footer = () => {
     <View>
       <Container>
         <View style={styles.containerFooter}>
-          <LinkButton style={styles.btnNav} href="/profile"><Icon name="person" type="ionicon" color="#fff"/></LinkButton>
-          <LinkButton style={styles.btnNav} href="/scanner"><Icon name="qr-code" type="ionicons" color="#fff"/></LinkButton>
-          <LinkButton style={styles.btnNav} href="/"><Icon name="house" type="FontAwesome6" color="#fff"/></LinkButton>
-          <LinkButton style={styles.btnNav} href="/search"><Icon name="search" type="ionicon" color="#fff"/></LinkButton>
+          <LinkButton style={styles.btnNav} href="/logged/profile"><Icon name="person" type="ionicon" color="#fff"/></LinkButton>
+          <LinkButton style={styles.btnNav} href="/logged/scanner"><Icon name="qr-code" type="ionicons" color="#fff"/></LinkButton>
+          <LinkButton style={styles.btnNav} href="/logged/"><Icon name="house" type="FontAwesome6" color="#fff"/></LinkButton>
+          <LinkButton style={styles.btnNav} href="/logged/search"><Icon name="search" type="ionicon" color="#fff"/></LinkButton>
         </View>
       </Container>
     </View>

@@ -20,7 +20,7 @@ const CardCustom = (props) => {
 
   return <>
     <Card style={[styles.cardContainer, { ...props.styleContainer }]}>
-      <Card.Cover source={{ uri: props.url }} style={[styles.cardCover, { ...props.styleCover }]} />
+      <Card.Cover testID='cardCover' source={{ uri: props.url }} style={[styles.cardCover, { ...props.styleCover }]} />
       {props.content &&
         <Card.Content style={[styles.cardContent, { ...props.styleContent }]}>
           {props.children}

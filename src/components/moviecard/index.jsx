@@ -1,13 +1,9 @@
 import * as React from 'react';
 import { StyleSheet, Dimensions, View } from 'react-native';
-import axios from "axios";
 import { Card, Text } from 'react-native-paper';
 import { router } from 'expo-router';
 
 import { ButtonComponent } from "../button/index.jsx";
-
-import { getData } from "../../../api/manipulateData.js";
-import { getItem, setItem, removeItem } from "../../../utils/data.js";
 import { secure_base_url, backdrop_sizes } from "../../constants/configs.json";
 import Colors from "../../constants/colors.js";
 import { EXPO_TMDB_API_TOKEN } from "../../../env.json";
@@ -28,27 +24,16 @@ const MovieCard = (props) => {
       backdrop_sizes[backdrop_sizes.length - 1] +
       movie.backdrop_path
     )
-
-    const responseDetails = await getData(`https://api.themoviedb.org/3/movie/${movie.id}?language=pt-BR`, head);
-    movie["searchedDetails"] = responseDetails.data;
-
-    const responseSimilars = await getData(`https://api.themoviedb.org/3/movie/${movie.id}/similar?language=pt-BR&page=1`, head);
-    movie["searchedSimilars"] = responseSimilars.data;
   }
 
   const openDetails = async () => {
-    props.data["searchedImg"] = url;
-    await setItem("@movie", props.data);
-    router.replace("/details")
+    if(!props.teste) {
+      props.data["searchedImg"] = url;
+      router.replace({ pathname: `/logged/details`, params: props.data })
+    } else {
+      props.functionTeste();
+    }
   };
-
-  const removeMovie = async () => {
-    await removeItem("@movie");
-  };
-
-  React.useEffect(() => {
-    removeMovie();
-  }, []);
 
   React.useEffect(() => {
     setMovie(props.data);
@@ -60,19 +45,19 @@ const MovieCard = (props) => {
 
   return <>
     <Card style={[styles.cardContainer, { ...props.styleContainer }]}>
-      <Card.Cover source={{ uri: url }} style={[styles.cardCover, { ...props.styleCover }]} />
+      <Card.Cover testID='cardCover' source={{ uri: url }} style={[styles.cardCover, { ...props.styleCover }]} />
       <Card.Content style={[styles.cardContent, { ...props.styleContent }]}>
         <Text variant="titleLarge" style={[{ ...props.styleTitle }]}>{movie.title}</Text>
         <Text variant="bodyMedium" style={[{ ...props.styleRating }]}>{movie.vote_average.toFixed(2)}</Text>
         {
-          props.showDescription && 
+          props.showDescription &&
           <View style={styles.containerOverview}>
             <Text variant="bodyMedium" style={{ ...props.styleOverview }}>{movie.overview}</Text>
           </View>
         }
       </Card.Content>
       <Card.Actions style={[styles.cardActions, { ...props.styleAction }]}>
-        <ButtonComponent mode="contained" onPress={openDetails} style={{ backgroundColor: Colors().GoldenSunrise }}><Text>Detalhes</Text></ButtonComponent>
+        <ButtonComponent testID="movieCardButton" mode="contained" onPress={openDetails} style={{ backgroundColor: Colors().GoldenSunrise }}><Text>Detalhes</Text></ButtonComponent>
       </Card.Actions>
     </Card>
   </>

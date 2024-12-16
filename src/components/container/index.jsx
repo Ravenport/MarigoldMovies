@@ -1,8 +1,8 @@
 import { View, StyleSheet, Dimensions } from "react-native";
 
 const Container = (props) => {
-  return <View style={styles.alignmentContainer}>
-    <View style={styles.container}>
+  return <View testID="alignmentContainer" style={styles.alignmentContainer}>
+    <View testID="container" style={styles.container}>
       {props.children}
     </View>
   </View>

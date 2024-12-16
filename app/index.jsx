@@ -1,117 +1,111 @@
-import { Text, View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { useState, useEffect, useCallback } from "react";
-
+import { View, Text, StyleSheet, SafeAreaView, Dimensions, Linking } from "react-native";
+import { useEffect } from "react";
+import { CustomButton } from "../src/components/button/index";
+import Colors from "../src/constants/colors";
 import axios from "axios";
+import { EXPO_TMDB_API_TOKEN, EXPO_TMDB_API_KEY } from "../env.json";
+import { router, useGlobalSearchParams, useLocalSearchParams } from "expo-router";
+import {useSession} from "../context";
 
-import Body from '../src/components/body/index.jsx';
-import Container from "../src/components/container/index.jsx";
-import MovieCard from "../src/components/moviecard/index.jsx";
-import Carousel from '../src/components/carousel/index.jsx';
-import { EXPO_TMDB_API_TOKEN } from "../env.json";
-import { getData } from "../api/manipulateData.js";
+const Login = () => {
+    const local = useLocalSearchParams();
+    const {signIn, session} = useSession();
+    
+    const styles = StyleSheet.create({
+        containerLogin: {
+            height: Dimensions.get("window").height,
+            width: Dimensions.get("window").width,
+            padding: 10,
+            alignItems: "center",
+            justifyContent: "center",
+        },
+        containerTitle: {
+            backgroundColor: Colors().CheerFulmarigold,
+            padding: 20,
+            marginBottom: 20,
+            borderRadius: 10,
+            width: "50%",
+        },
+        title: {
+            fontSize: 25,
+            fontWeight: "bold",
+            fontFamily: "arial",
+            marginBottom: 5,
+            color: "white",
+            textAlign: "center",
+        },
+        subTitle: {
+            fontSize: 16,
+            fontFamily: "arial",
+            color: "white",
+            textAlign: "center",
+        },
+        btn: {
+            backgroundColor: Colors().GoldenSunrise,
+            padding: 5,
+            marginBottom: 20,
+            width: "50%",
+        },
+        btnTitle: {
+            color: "white",
+            textAlign: "center",
+            fontSize: 16,
+            fontWeight: "bold",
+        },
+    });
 
-const Index = ({ navigation }) => {
-  const [nowPlaying, setNowPlaying] = useState([]);
-  const [pageNowPlaying, setPageNowPlaying] = useState(1);
+    const handleLogin = async () => {
+        const config = {
+            headers: {
+                accept: "application/json",
+                Authorization: "Bearer " + EXPO_TMDB_API_TOKEN,
+            },
+        };
+        await axios.get('https://api.themoviedb.org/3/authentication/token/new', config).then((response) => {
+            login(response.data.request_token);
+        });
+    };
 
-  const [trending, setTrending] = useState([]);
-  const [pageTrending, setPageTrending] = useState(1);
-
-  const [trendingDay, setTrendingDay] = useState([]);
-  const [trendingWeek, setTrendingWeek] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const config = {
-    headers: {
-      accept: "application/json",
-      Authorization: "Bearer " + EXPO_TMDB_API_TOKEN,
-    },
-  };
-
-  async function loadMovies() {
-    const nowPlayingResp = await getData(
-      `https://api.themoviedb.org/3/movie/now_playing?language=pt-BR&page=1`,
-      config
-    );
-    setNowPlaying([...nowPlaying, ...nowPlayingResp.data.results]);
-
-    const trendingResp = await getData(
-      `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=pt-BR&page=1&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200`,
-      config
-    );
-    setTrending([...trending, ...trendingResp.data.results]);
-
-    const trendingDayResp = await getData(
-      'https://api.themoviedb.org/3/trending/movie/day?language=pt-BR',
-      config
-    );
-    setTrendingDay(trendingDayResp.data.results);
-
-    const trendingWeekResp = await getData(
-      'https://api.themoviedb.org/3/trending/movie/week?language=pt-BR',
-      config
-    );
-    setTrendingWeek(trendingWeekResp.data.results);
-  }
-
-  const refresh = useCallback(() => {
-    setRefreshing(true);
-    navigation.navigate("Home");
-  }, []);
-
-  const handlePagination = (type) => {
-    switch (type) {
-      case "nowPlaying":
-        const nPPage = pageNowPlaying+1;
-        setPageNowPlaying(nPPage);
-      break;
-      case "trending":
-        const tPage = pageTrending+1;
-        setPageTrending(tPage);
-      break;
+    const login = async (token) => {
+        let urlTemp;
+        await Linking.getInitialURL().then((url) => {
+            urlTemp = url;
+        });
+        Linking.openURL(`https://www.themoviedb.org/authenticate/${token}?redirect_to=${urlTemp}`);
     }
-  };
 
-  const paginateData = async (url, setData, data) => {
-    const response = await getData(url, config);
-    setData([...data, ...response.data.results]);
-  }
+    const createSessionID = async (token) => {
+        console.log(token);
+        const config = {
+            headers: {
+                accept: "application/json",
+            }
+        };
+        await axios.post(`https://api.themoviedb.org/3/authentication/session/new?api_key=${EXPO_TMDB_API_KEY}&request_token=${token}`, config).then((response) => {
+            signIn(response.data.session_id);
+            router.replace({ pathname: `/logged/` })
+        });
+    }
 
-  useEffect(() => {
-    paginateData(`https://api.themoviedb.org/3/movie/now_playing?language=pt-BR&page=${pageNowPlaying}`, setNowPlaying, nowPlaying);
-  }, [pageNowPlaying]);
+    useEffect(() => {
+        if(local.request_token) {
+            createSessionID(local.request_token);
+        }
+    }, [])
 
-  useEffect(() => {
-    paginateData(`https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=pt-BR&page=${pageTrending}&sort_by=vote_average.desc&without_genres=99,10755&vote_count.gte=200`,
-      setTrending,
-      trending
-    );
-  }, [pageTrending]);
+    useEffect(() => {
+        if(session) {
+            router.replace({ pathname: `/logged/` })
+        }
+    }, [session])
 
-  useEffect(() => {
-    loadMovies();
-  }, []);
+    return <SafeAreaView style={styles.containerLogin}>
+            <View style={styles.containerTitle}>
+                <Text style={styles.title}>Filmes Marigold</Text>
+                <Text style={styles.subTitle}>Login using TMDB</Text>
+            </View>
+            <CustomButton onPress={handleLogin} style={styles.btn}><Text style={styles.btnTitle}>Entrar</Text></CustomButton>
+    </SafeAreaView>
+};
 
-  return <>
-    <Body>
-      <ScrollView>
-        <Container>
-          <View style={styles.containerCard}>
-            {nowPlaying && <Carousel lastItem={() => handlePagination("nowPlaying")} marginTop={20} marginBottom={80} title="Em Cartaz" items={nowPlaying}><MovieCard /></Carousel>}
-            {trending && <Carousel lastItem={() => handlePagination("trending")} marginTop={20} marginBottom={80} title="Em Alta" items={trending}><MovieCard /></Carousel>}
-            {trendingDay && <Carousel lastItem={() => {}} marginTop={20} marginBottom={80} title="Em Alta Hoje" items={trendingDay}><MovieCard /></Carousel>}
-            {trendingWeek && <Carousel lastItem={() => {}} marginTop={20} marginBottom={80} title="Em Alta na Ultima Semana" items={trendingWeek}><MovieCard /></Carousel>}
-          </View>
-        </Container>
-      </ScrollView>
-    </Body>
-  </>
-}
-
-const styles = StyleSheet.create({
-  containerCard: {
-    width: "100%",
-    alignItems: "center",
-  },
-});
-
-export default Index;
+export default Login;
